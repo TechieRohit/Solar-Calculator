@@ -16,7 +16,6 @@ public class SplashActivity extends AppCompatActivity {
 
     private static final String COARSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
     private static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
-    private boolean permissionGranted = false;
     private final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 999;
 
     @Override
@@ -48,7 +47,8 @@ public class SplashActivity extends AppCompatActivity {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mainActivity();
                 }else {
-                    //Toast.makeText(SplashActivity.this,"You need to grant the location permission in order to use this app !\n Restart Now..",Toast.LENGTH_LONG).show();
+                    Toast.makeText(SplashActivity.this,"You need to grant the location permission in order to use" +
+                            " this app !\n Restart Now..",Toast.LENGTH_LONG).show();
                 }
             }
         }

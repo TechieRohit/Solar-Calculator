@@ -4,5 +4,14 @@
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
 
-    <color name="translucent_white">#A6C0C0C0</color>
+    <color name="translucent_white">#BFC0C0C0</color>
+    <color name="orange_tint">#ffae19</color>
+    <color name="orange_tint_light">#ffc966</color>
+
+    <color name="blue_tint">#4381e9</color>
+    <color name="blue_tint_light">#97b9f3</color>
+
+    <color name="orange">#FF8C00</color>
+    <color name="blue">#4169e1</color>
+
 </resources>

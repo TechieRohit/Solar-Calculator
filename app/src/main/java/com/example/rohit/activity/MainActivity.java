@@ -1,9 +1,13 @@
 package com.example.rohit.activity;
 
+import android.media.Image;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.example.rohit.solarcalulator.R;
 import com.example.rohit.utils.solarcalculator.Location;
@@ -22,9 +26,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MainActivity extends FragmentActivity implements OnMapReadyCallback,View.OnClickListener {
 
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
@@ -38,12 +44,24 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     private PlaceDetectionClient mPlaceDetectionClient;
     private FusedLocationProviderClient mFusedLocationProviderClient;
 
+    private Calendar mCalendar;
+    DateFormat dateFormat;
+    String strDateFormat = "hh:mm: a";
+
+    private ImageView mCurrentDate,mPreviousDate,mNextDate;
+    private TextView mSunrise,mSunset,mMoonrise,mMoonset,mDate;
+
+    SunriseSunsetCalculator calculator;
+    String sunrise,sunset;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         initMap();
+
+        mCalendar = Calendar.getInstance();
+        dateFormat = new SimpleDateFormat(strDateFormat);
 
         if (savedInstanceState != null) {
             mCurrentLocation = savedInstanceState.getParcelable(KEY_LOCATION);
@@ -52,7 +70,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     mCurrentLocation.getLongitude()), DEFAULT_ZOOM));
 
         }
-
         // Construct a GeoDataClient.
         mGeoDataClient = Places.getGeoDataClient(this, null);
 
@@ -62,7 +79,24 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         // Construct a FusedLocationProviderClient.
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
+        initViews();
+        onClick();
+    }
 
+    private void onClick() {
+
+    }
+
+    private void initViews() {
+        mDate = findViewById(R.id.date);
+        mSunrise = findViewById(R.id.text_sunrise);
+        mSunset = findViewById(R.id.text_sunset);
+        mMoonrise = findViewById(R.id.text_moonrise);
+        mMoonset = findViewById(R.id.text_moonset);
+
+        mCurrentDate = findViewById(R.id.current_date);
+        mPreviousDate = findViewById(R.id.previous_date);
+        mNextDate = findViewById(R.id.next_date);
     }
 
 
@@ -145,16 +179,17 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 longitude), DEFAULT_ZOOM));
 
         Location location = new Location(latitude, longitude);
-        SunriseSunsetCalculator calculator = new SunriseSunsetCalculator(location, "");
+        calculator = new SunriseSunsetCalculator(location, "");
 
         //String officialSunrise = calculator.getOfficialSunriseForDate(Calendar.getInstance());
+        Calendar officialSunset = calculator.getOfficialSunsetCalendarForDate(mCalendar);
+        Calendar officialSunrise = calculator.getOfficialSunriseCalendarForDate(mCalendar);
 
-        Calendar officialSunset = calculator.getOfficialSunsetCalendarForDate(Calendar.getInstance() );
-        Calendar officialSunrise = calculator.getOfficialSunriseCalendarForDate(Calendar.getInstance());
+
+        sunrise = dateFormat.format(officialSunrise.getTime());
+        sunset = dateFormat.format(officialSunset.getTime());
 
 
-        Toast.makeText(this,"sunrise - " + officialSunrise.getTime() +
-                "\nsunset - " + officialSunset.getTime(),Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -165,5 +200,19 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             super.onSaveInstanceState(outState);
         }
         super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onClick(View v) {
+        int id = v.getId();
+
+        switch (id) {
+            case R.id.next_date:
+                break;
+            case R.id.current_date:
+                break;
+            case R.id.previous_date:
+                break;
+        }
     }
 }
