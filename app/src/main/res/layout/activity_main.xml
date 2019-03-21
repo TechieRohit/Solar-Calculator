@@ -11,6 +11,7 @@
         android:id="@+id/search_places_edit"
         android:layout_width="0dp"
         android:layout_height="50dp"
+        android:singleLine="true"
         app:layout_constraintEnd_toStartOf="@+id/imageView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">

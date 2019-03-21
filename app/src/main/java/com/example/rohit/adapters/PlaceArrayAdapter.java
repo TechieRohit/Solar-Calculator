@@ -74,14 +74,13 @@ public class PlaceArrayAdapter extends ArrayAdapter implements Filterable {
         // and once again when the user makes a selection (for example when calling fetchPlace()).
         AutocompleteSessionToken token = AutocompleteSessionToken.newInstance();
 
-
         // Use the builder to create a FindAutocompletePredictionsRequest.
         FindAutocompletePredictionsRequest request = FindAutocompletePredictionsRequest.builder()
                 // Call either setLocationBias() OR setLocationRestriction().
                 // .setLocationBias(bounds)
                 .setLocationBias(mBounds)
                 //.setCountry("au")
-                //   .setTypeFilter(TypeFilter.ADDRESS)
+                // .setTypeFilter(TypeFilter.ADDRESS)
                 .setSessionToken(token)
                 .setQuery(constraint.toString())
                 .build();
@@ -153,6 +152,7 @@ public class PlaceArrayAdapter extends ArrayAdapter implements Filterable {
         public CharSequence placeId;
         public CharSequence description;
 
+
         PlaceAutocomplete(CharSequence placeId, CharSequence description) {
             this.placeId = placeId;
             this.description = description;
@@ -161,6 +161,14 @@ public class PlaceArrayAdapter extends ArrayAdapter implements Filterable {
         @Override
         public String toString() {
             return description.toString();
+        }
+
+        public CharSequence getPlaceId() {
+            return placeId;
+        }
+
+        public CharSequence getDescription() {
+            return description;
         }
     }
 }
