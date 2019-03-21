@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.rohit.adapters.PlaceArrayAdapter;
 import com.example.rohit.adapters.PlaceAutocompleteAdapter;
 import com.example.rohit.constants.IntentKeys;
 import com.example.rohit.constants.Vars;
@@ -43,26 +44,34 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+
+
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
 import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.AutocompleteActivity;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.rohit.solarcalulator.R;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
 
 import static com.example.rohit.constants.Vars.DEFAULT_ZOOM;
 
-public class MainActivity extends FragmentActivity implements OnMapReadyCallback,GoogleApiClient.OnConnectionFailedListener,
+public class MainActivity extends FragmentActivity implements OnMapReadyCallback,
         View.OnClickListener {
 
     private final String TAG = "main_activity";
+    int AUTOCOMPLETE_REQUEST_CODE = 1;
+
 
     private android.location.Location mLastKnownLocation;
     private android.location.Location mCurrentLocation;
@@ -81,6 +90,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     String sunrise,sunset;
     Calendar officialSunset;
     Calendar officialSunrise;
+
+    AutoCompleteTextView searchPlaces;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,13 +118,29 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     private void initViews() {
+        com.google.android.libraries.places.api.Places.initialize(getApplicationContext(),
+                "AIzaSyAxt0Mx9mDnNlC-rQ6hMieuYhFgI1Z-iuo");
         mDate = findViewById(R.id.date);
         mSunrise = findViewById(R.id.text_sunrise);
         mSunset = findViewById(R.id.text_sunset);
         mMoonrise = findViewById(R.id.text_moonrise);
         mMoonset = findViewById(R.id.text_moonset);
 
-        com.google.android.libraries.places.api.Places.initialize(getApplicationContext(),
+        searchPlaces = findViewById(R.id.search_places_edit);
+        searchPlaces.setThreshold(3);
+//autoCompleteTextView.setOnItemClickListener(mAutocompleteClickListener);
+
+        RectangularBounds bounds = RectangularBounds.newInstance(
+                new LatLng(-33.880490, 151.184363),
+                new LatLng(-33.858754, 151.229596));
+
+        PlaceArrayAdapter mPlaceArrayAdapter = new PlaceArrayAdapter(this,
+                R.layout.simple,
+                bounds);
+
+        searchPlaces.setAdapter(mPlaceArrayAdapter);
+
+      /*  com.google.android.libraries.places.api.Places.initialize(getApplicationContext(),
                 "AIzaSyAxt0Mx9mDnNlC-rQ6hMieuYhFgI1Z-iuo");
 
         // Initialize the AutocompleteSupportFragment.
@@ -139,7 +166,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             public void onError(@NonNull Status status) {
                 Toast.makeText(MainActivity.this,"error - " + status, Toast.LENGTH_LONG).show();
             }
-        });
+        });*/
 
     }
 
@@ -258,6 +285,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             case R.id.current_date:
                 mCalendar = Calendar.getInstance();
                 updateTimings();
+                //autoCompleteAsIntent();
+                manualAutoComplete();
                 break;
             case R.id.previous_date:
                 mCalendar.add(Calendar.DAY_OF_MONTH,-1);
@@ -280,8 +309,79 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+    private void autoCompleteAsIntent() {
+        List<com.google.android.libraries.places.api.model.Place.Field> fields =
+                Arrays.asList(com.google.android.libraries.places.api.model.Place.Field.ID,
+                        com.google.android.libraries.places.api.model.Place.Field.NAME);
 
+        Intent intent = new Autocomplete.IntentBuilder(
+                AutocompleteActivityMode.OVERLAY, fields)
+                .setCountry("IN")
+                .setLocationBias(RectangularBounds.newInstance(
+                        new LatLng(-33.880490, 151.184363),
+                        new LatLng(-33.858754, 151.229596)))
+                .setTypeFilter(TypeFilter.CITIES)
+                .build(this);
+        startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == AUTOCOMPLETE_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                com.google.android.libraries.places.api.model.Place
+                        place = Autocomplete.getPlaceFromIntent(data);
+                Log.i(TAG, "Place: " + place.getName() + ", " + place.getId());
+                Toast.makeText(MainActivity.this,"place - " + place.getName(), Toast.LENGTH_LONG).show();
+            } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
+                // TODO: Handle the error.
+                Status status = Autocomplete.getStatusFromIntent(data);
+                Log.i(TAG, status.getStatusMessage());
+                Toast.makeText(MainActivity.this,"place - " + status.getStatusMessage(), Toast.LENGTH_LONG).show();
+            } else if (resultCode == RESULT_CANCELED) {
+                // The user canceled the operation.
+            }
+        }
+    }
+
+    public void manualAutoComplete() {
+        // Create a new token for the autocomplete session. Pass this to FindAutocompletePredictionsRequest,
+// and once again when the user makes a selection (for example when calling fetchPlace()).
+        PlacesClient placesClient = com.google.android.libraries.places.api.Places.createClient(this);
+
+
+        AutocompleteSessionToken token = AutocompleteSessionToken.newInstance();
+
+// Create a RectangularBounds object.
+        RectangularBounds bounds = RectangularBounds.newInstance(
+                new LatLng(-33.880490, 151.184363),
+                new LatLng(-33.858754, 151.229596));
+// Use the builder to create a FindAutocompletePredictionsRequest.
+        FindAutocompletePredictionsRequest request = FindAutocompletePredictionsRequest.builder()
+// Call either setLocationBias() OR setLocationRestriction().
+                //.setLocationRestriction(bounds)
+                .setCountry("IN")
+                .setTypeFilter(TypeFilter.ADDRESS)
+                .setSessionToken(token)
+                .setQuery("Ch")
+                .build();
+
+        placesClient.findAutocompletePredictions(request).addOnSuccessListener(new OnSuccessListener<FindAutocompletePredictionsResponse>() {
+            @Override
+            public void onSuccess(FindAutocompletePredictionsResponse findAutocompletePredictionsResponse) {
+              List<com.google.android.libraries.places.api.model.AutocompletePrediction> list =
+                      findAutocompletePredictionsResponse.getAutocompletePredictions();
+
+                for (int i = 0; i<list.size(); i++) {
+                    Toast.makeText(MainActivity.this,"prediction - " +
+                            list.get(i).getPrimaryText(null).toString(),Toast.LENGTH_LONG).show();
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(MainActivity.this,"e" + e.getMessage(),Toast.LENGTH_LONG).show();
+            }
+        });
     }
 }
