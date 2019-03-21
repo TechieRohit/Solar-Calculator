@@ -30,21 +30,20 @@ public class AutoComplete extends AppCompatActivity {
         AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
                 getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
 
-        // Specify the types of place data to return.
-        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
+        autocompleteFragment.setPlaceFields(Arrays.asList(com.google.android.libraries.places.api.model.Place.Field.ID, com.google.android.libraries.places.api.model.Place.Field.NAME));
 
         // Set up a PlaceSelectionListener to handle the response.
-         autocompleteFragment.setOnPlaceSelectedListener(new com.google.android.libraries.places.widget.listener.PlaceSelectionListener() {
-             @Override
-             public void onPlaceSelected(@NonNull Place place) {
-                 Toast.makeText(AutoComplete.this,"place - " + place.getName(), Toast.LENGTH_LONG).show();
-             }
+        autocompleteFragment.setOnPlaceSelectedListener(new com.google.android.libraries.places.widget.listener.PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(@NonNull com.google.android.libraries.places.api.model.Place place) {
+                Toast.makeText(AutoComplete.this,"place - " + place.getName(), Toast.LENGTH_LONG).show();
+            }
 
-             @Override
-             public void onError(@NonNull Status status) {
-                 Log.i("error", "An error occurred: " + status);
-                 Toast.makeText(AutoComplete.this,"error - " + status, Toast.LENGTH_LONG).show();
-             }
-         });
+            @Override
+            public void onError(@NonNull Status status) {
+                Log.i("error", "An error occurred: " + status);
+                Toast.makeText(AutoComplete.this,"error - " + status, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 }

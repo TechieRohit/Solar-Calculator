@@ -62,7 +62,6 @@ import static com.example.rohit.constants.Vars.DEFAULT_ZOOM;
 public class MainActivity extends FragmentActivity implements OnMapReadyCallback,GoogleApiClient.OnConnectionFailedListener,
         View.OnClickListener {
 
-    private final int AUTO_COMP_REQ_CODE = 847;
     private final String TAG = "main_activity";
 
     private android.location.Location mLastKnownLocation;
@@ -70,20 +69,13 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     private CameraPosition mCameraPosition;
 
     private GoogleMap mMap;
-    private GeoDataClient mGeoDataClient;
-    private PlaceDetectionClient mPlaceDetectionClient;
     private FusedLocationProviderClient mFusedLocationProviderClient;
-    private GoogleApiClient mGoogleApiClient;
 
     private Calendar mCalendar;
     DateFormat hourFormat;
     DateFormat dateFormat;
 
-    private ImageView mCurrentDate,mPreviousDate,mNextDate;
     private TextView mSunrise,mSunset,mMoonrise,mMoonset,mDate;
-    private AutoCompleteTextView mPlaceAutoComplete;
-    private PlaceAutocompleteAdapter mPlaceAutocompleteAdapter;
-    private static final LatLngBounds LAT_LNG_BOUNDS = new LatLngBounds(new LatLng(-40,-168),new LatLng(71,136));
 
     SunriseSunsetCalculator calculator;
     String sunrise,sunset;
@@ -108,17 +100,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     mCurrentLocation.getLongitude()), DEFAULT_ZOOM));
 
         }
-        // Construct a GeoDataClient.
-        mGeoDataClient = Places.getGeoDataClient(this, null);
-
-        // Construct a PlaceDetectionClient.
-        mPlaceDetectionClient = Places.getPlaceDetectionClient(this, null);
 
         // Construct a FusedLocationProviderClient.
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-
-        autoCompleteAddress();
-
     }
 
 
@@ -129,13 +113,35 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         mMoonrise = findViewById(R.id.text_moonrise);
         mMoonset = findViewById(R.id.text_moonset);
 
-        mCurrentDate = findViewById(R.id.current_date);
-        mPreviousDate = findViewById(R.id.previous_date);
-        mNextDate = findViewById(R.id.next_date);
+        com.google.android.libraries.places.api.Places.initialize(getApplicationContext(),
+                "AIzaSyAxt0Mx9mDnNlC-rQ6hMieuYhFgI1Z-iuo");
 
-        mPlaceAutoComplete = findViewById(R.id.search_places_edit);
+        // Initialize the AutocompleteSupportFragment.
+        AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
+                getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
+
+        autocompleteFragment.setCountry("IN");
+        autocompleteFragment.setTypeFilter(TypeFilter.CITIES);
+        autocompleteFragment.setTypeFilter(TypeFilter.ADDRESS);
+        autocompleteFragment.setTypeFilter(TypeFilter.REGIONS);
+
+        autocompleteFragment.setPlaceFields(Arrays.asList(com.google.android.libraries.places.api.model.Place.Field.ID,
+                com.google.android.libraries.places.api.model.Place.Field.NAME));
+
+        autocompleteFragment.setOnPlaceSelectedListener(new com.google.android.libraries.places.widget.listener.
+                PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(@NonNull com.google.android.libraries.places.api.model.Place place) {
+                Toast.makeText(MainActivity.this,"place - " + place.getName(), Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onError(@NonNull Status status) {
+                Toast.makeText(MainActivity.this,"error - " + status, Toast.LENGTH_LONG).show();
+            }
+        });
+
     }
-
 
     private void initMap() {
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -157,7 +163,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        mGoogleApiClient = new GoogleApiClient.
+      /*  mGoogleApiClient = new GoogleApiClient.
                 Builder(this)
                 .addApi(Places.GEO_DATA_API)
                 .addApi(Places.PLACE_DETECTION_API)
@@ -166,7 +172,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         mGoogleApiClient.connect();
 
         mPlaceAutocompleteAdapter = new PlaceAutocompleteAdapter(this,mGoogleApiClient,LAT_LNG_BOUNDS,null);
-        mPlaceAutoComplete.setAdapter(mPlaceAutocompleteAdapter);
+        mPlaceAutoComplete.setAdapter(mPlaceAutocompleteAdapter);*/
          // Add a marker in Sydney and move the camera
        /* LatLng sydney = new LatLng(-34, 151);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
@@ -247,18 +253,17 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         switch (id) {
             case R.id.next_date:
                 mCalendar.add(Calendar.DAY_OF_MONTH,1);
+                updateTimings();
                 break;
             case R.id.current_date:
                 mCalendar = Calendar.getInstance();
+                updateTimings();
                 break;
             case R.id.previous_date:
                 mCalendar.add(Calendar.DAY_OF_MONTH,-1);
-                break;
-            case R.id.search_places_edit:
-                //autoCompleteAddress();
+                updateTimings();
                 break;
         }
-        updateTimings();
     }
 
     private void updateTimings() {
@@ -274,52 +279,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         mDate.setText(String.valueOf(mCalendar.getTime()));
     }
 
-    private void autoCompleteAddress() {
-
-        mPlaceAutocompleteAdapter = new PlaceAutocompleteAdapter(this,mGoogleApiClient,LAT_LNG_BOUNDS,null);
-
-        com.google.android.libraries.places.api.Places.initialize(getApplicationContext(),
-                "AIzaSyAxt0Mx9mDnNlC-rQ6hMieuYhFgI1Z-iuo");
-
-        PlacesClient placesClient = com.google.android.libraries.places.api.Places.createClient(this);
-
-
-        AutocompleteSessionToken token = AutocompleteSessionToken.newInstance();
-
-        RectangularBounds bounds = RectangularBounds.newInstance(
-                new LatLng(-33.880490, 151.184363),
-                new LatLng(-33.858754, 151.229596));
-        FindAutocompletePredictionsRequest request = FindAutocompletePredictionsRequest.builder()
-                .setLocationBias(bounds)
-                //.setLocationRestriction(bounds)
-                .setQuery("chiranjiv vihar")
-                .setTypeFilter(TypeFilter.ADDRESS)
-                .setSessionToken(token)
-                .build();
-
-        placesClient.findAutocompletePredictions(request).addOnSuccessListener(new OnSuccessListener
-                <FindAutocompletePredictionsResponse>() {
-            @Override
-            public void onSuccess(FindAutocompletePredictionsResponse findAutocompletePredictionsResponse) {
-                findAutocompletePredictionsResponse.getAutocompletePredictions().get(0).a();
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-
-            }
-        });
-
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (resultCode == RESULT_OK) {
-            Place place = PlaceAutocomplete.getPlace(this, data);
-            Toast.makeText(this, "place "+ place.toString(),
-                    Toast.LENGTH_LONG).show();
-        }
-    }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
