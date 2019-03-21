@@ -10,10 +10,13 @@ import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
 
+import com.example.rohit.modals.PlaceAutoComplete;
+import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
 import com.google.android.libraries.places.api.model.RectangularBounds;
+import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
@@ -27,7 +30,7 @@ public class PlaceArrayAdapter extends ArrayAdapter implements Filterable {
     private static final String TAG = "PlaceArrayAdapter";
     private final PlacesClient placesClient;
     private RectangularBounds mBounds;
-    private ArrayList<PlaceAutocomplete> mResultList = new ArrayList<>();
+    private ArrayList<PlaceAutoComplete> mResultList = new ArrayList<>();
     public Context context;
 
     /**
@@ -62,13 +65,13 @@ public class PlaceArrayAdapter extends ArrayAdapter implements Filterable {
     }
 
     @Override
-    public PlaceAutocomplete getItem(int position) {
+    public PlaceAutoComplete getItem(int position) {
         return mResultList.get(position);
     }
 
-    private ArrayList<PlaceAutocomplete> getPredictions(CharSequence constraint) {
+    private ArrayList<PlaceAutoComplete> getPredictions(CharSequence constraint) {
 
-        final ArrayList<PlaceAutocomplete> resultList = new ArrayList<>();
+        final ArrayList<PlaceAutoComplete> resultList = new ArrayList<>();
 
         // Create a new token for the autocomplete session. Pass this to FindAutocompletePredictionsRequest,
         // and once again when the user makes a selection (for example when calling fetchPlace()).
@@ -79,8 +82,8 @@ public class PlaceArrayAdapter extends ArrayAdapter implements Filterable {
                 // Call either setLocationBias() OR setLocationRestriction().
                 // .setLocationBias(bounds)
                 .setLocationBias(mBounds)
-                //.setCountry("au")
-                // .setTypeFilter(TypeFilter.ADDRESS)
+                .setCountry("IN")
+                .setTypeFilter(TypeFilter.CITIES)
                 .setSessionToken(token)
                 .setQuery(constraint.toString())
                 .build();
@@ -102,7 +105,7 @@ public class PlaceArrayAdapter extends ArrayAdapter implements Filterable {
                     Log.i(TAG, prediction.getPlaceId());
                     Log.i(TAG, prediction.getPrimaryText(null).toString());
 
-                    resultList.add(new PlaceAutocomplete(prediction.getPlaceId(), prediction.getFullText(null).toString()));
+                    resultList.add(new PlaceAutoComplete(prediction.getPlaceId(), prediction.getFullText(null).toString()));
 
                 }
 
@@ -147,7 +150,7 @@ public class PlaceArrayAdapter extends ArrayAdapter implements Filterable {
         return filter;
     }
 
-    public class PlaceAutocomplete {
+   /* public class PlaceAutocomplete {
 
         public CharSequence placeId;
         public CharSequence description;
@@ -170,5 +173,5 @@ public class PlaceArrayAdapter extends ArrayAdapter implements Filterable {
         public CharSequence getDescription() {
             return description;
         }
-    }
+    }*/
 }

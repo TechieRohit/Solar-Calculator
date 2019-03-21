@@ -1,5 +1,6 @@
 package com.example.rohit.activity;
 
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -13,11 +14,14 @@ import android.widget.Toast;
 import com.example.rohit.adapters.PlaceArrayAdapter;
 import com.example.rohit.constants.IntentKeys;
 import com.example.rohit.constants.Vars;
+
+import com.example.rohit.modals.PlaceAutoComplete;
 import com.example.rohit.utils.solarcalculator.Location;
 import com.example.rohit.utils.solarcalculator.SunriseSunsetCalculator;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -38,6 +42,7 @@ import com.google.android.libraries.places.api.net.FetchPlaceResponse;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.rohit.solarcalulator.BuildConfig;
 import com.rohit.solarcalulator.R;
 
 import java.text.DateFormat;
@@ -100,7 +105,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
     private void initViews() {
         com.google.android.libraries.places.api.Places.initialize(getApplicationContext(),
-                "AIzaSyAxt0Mx9mDnNlC-rQ6hMieuYhFgI1Z-iuo");
+                BuildConfig.places_api_key);
         placesClient = com.google.android.libraries.places.api.Places.createClient(this);
         mDate = findViewById(R.id.date);
         mSunrise = findViewById(R.id.text_sunrise);
@@ -124,7 +129,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         searchPlaces.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                final PlaceArrayAdapter.PlaceAutocomplete item =  mPlaceArrayAdapter.getItem(position);
+                final PlaceAutoComplete item =  mPlaceArrayAdapter.getItem(position);
                 final String placeId = (String) item.getPlaceId();
                 placeDetails(placeId);
             }
@@ -144,6 +149,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 com.google.android.libraries.places.api.model.Place place = fetchPlaceResponse.getPlace();
                 Log.i(TAG, "Place found: " + place.getName());
                 Log.i(TAG, "geoCor found: " + place.getLatLng());
+                Toast.makeText(MainActivity.this,"place name - " + place.getName() + place.getLatLng(),Toast.LENGTH_LONG).show();
                 LatLng latLng = place.getLatLng();
                 if (latLng != null) {
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM));
@@ -159,6 +165,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     int statusCode = apiException.getStatusCode();
                     // Handle error with given status code.
                     Log.e(TAG, "Place not found: " + exception.getMessage());
+                    Toast.makeText(MainActivity.this,"exception - " + exception.getMessage(),Toast.LENGTH_LONG).show();
                 }
             }
         });
