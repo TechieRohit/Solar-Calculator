@@ -1,39 +1,70 @@
 package com.example.rohit.activity;
 
+import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.example.rohit.solarcalulator.R;
+import com.example.rohit.adapters.PlaceAutocompleteAdapter;
+import com.example.rohit.constants.IntentKeys;
+import com.example.rohit.constants.Vars;
 import com.example.rohit.utils.solarcalculator.Location;
 import com.example.rohit.utils.solarcalculator.SunriseSunsetCalculator;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.AutocompleteFilter;
+import com.google.android.gms.location.places.AutocompletePrediction;
 import com.google.android.gms.location.places.GeoDataClient;
+import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlaceDetectionClient;
 import com.google.android.gms.location.places.Places;
+import com.google.android.gms.location.places.ui.PlaceAutocomplete;
+import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
+import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
+import com.google.android.libraries.places.api.model.RectangularBounds;
+import com.google.android.libraries.places.api.model.TypeFilter;
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse;
+import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
+import com.rohit.solarcalulator.R;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 
-public class MainActivity extends FragmentActivity implements OnMapReadyCallback,View.OnClickListener {
+import static com.example.rohit.constants.Vars.DEFAULT_ZOOM;
 
-    private static final String KEY_CAMERA_POSITION = "camera_position";
-    private static final String KEY_LOCATION = "location";
-    private final int DEFAULT_ZOOM = 12;
+public class MainActivity extends FragmentActivity implements OnMapReadyCallback,GoogleApiClient.OnConnectionFailedListener,
+        View.OnClickListener {
+
+    private final int AUTO_COMP_REQ_CODE = 847;
+    private final String TAG = "main_activity";
+
     private android.location.Location mLastKnownLocation;
     private android.location.Location mCurrentLocation;
     private CameraPosition mCameraPosition;
@@ -42,15 +73,17 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     private GeoDataClient mGeoDataClient;
     private PlaceDetectionClient mPlaceDetectionClient;
     private FusedLocationProviderClient mFusedLocationProviderClient;
+    private GoogleApiClient mGoogleApiClient;
 
     private Calendar mCalendar;
     DateFormat hourFormat;
     DateFormat dateFormat;
-    String strHourFormat = "hh:mm: a";
-    String strDateFormat = "mm/dd/yyyy";
 
     private ImageView mCurrentDate,mPreviousDate,mNextDate;
     private TextView mSunrise,mSunset,mMoonrise,mMoonset,mDate;
+    private AutoCompleteTextView mPlaceAutoComplete;
+    private PlaceAutocompleteAdapter mPlaceAutocompleteAdapter;
+    private static final LatLngBounds LAT_LNG_BOUNDS = new LatLngBounds(new LatLng(-40,-168),new LatLng(71,136));
 
     SunriseSunsetCalculator calculator;
     String sunrise,sunset;
@@ -61,16 +94,16 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        initViews();
         initMap();
 
         mCalendar = Calendar.getInstance();
-        hourFormat = new SimpleDateFormat(strHourFormat);
-        dateFormat = new SimpleDateFormat(strDateFormat);
-
+        hourFormat = new SimpleDateFormat(Vars.STR_HOUR_FORMAT);
+        dateFormat = new SimpleDateFormat(Vars.STR_DATE_FORMAT);
 
         if (savedInstanceState != null) {
-            mCurrentLocation = savedInstanceState.getParcelable(KEY_LOCATION);
-            mCameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
+            mCurrentLocation = savedInstanceState.getParcelable(IntentKeys.KEY_LOCATION);
+            mCameraPosition = savedInstanceState.getParcelable(IntentKeys.KEY_CAMERA_POSITION);
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mCurrentLocation.getLatitude(),
                     mCurrentLocation.getLongitude()), DEFAULT_ZOOM));
 
@@ -84,13 +117,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         // Construct a FusedLocationProviderClient.
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
-        initViews();
-        onClick();
-    }
-
-    private void onClick() {
+        autoCompleteAddress();
 
     }
+
 
     private void initViews() {
         mDate = findViewById(R.id.date);
@@ -102,6 +132,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         mCurrentDate = findViewById(R.id.current_date);
         mPreviousDate = findViewById(R.id.previous_date);
         mNextDate = findViewById(R.id.next_date);
+
+        mPlaceAutoComplete = findViewById(R.id.search_places_edit);
     }
 
 
@@ -125,7 +157,17 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        // Add a marker in Sydney and move the camera
+        mGoogleApiClient = new GoogleApiClient.
+                Builder(this)
+                .addApi(Places.GEO_DATA_API)
+                .addApi(Places.PLACE_DETECTION_API)
+                .enableAutoManage(this,this)
+                .build();
+        mGoogleApiClient.connect();
+
+        mPlaceAutocompleteAdapter = new PlaceAutocompleteAdapter(this,mGoogleApiClient,LAT_LNG_BOUNDS,null);
+        mPlaceAutoComplete.setAdapter(mPlaceAutocompleteAdapter);
+         // Add a marker in Sydney and move the camera
        /* LatLng sydney = new LatLng(-34, 151);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));*/
@@ -135,7 +177,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Get the current location of the device and set the position of the map.
         getDeviceLocation();
-
     }
 
     private void updateLocationUI() {
@@ -192,16 +233,16 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         if (mMap != null) {
-            outState.putParcelable(KEY_CAMERA_POSITION, mMap.getCameraPosition());
-            outState.putParcelable(KEY_LOCATION, mLastKnownLocation);
+            outState.putParcelable(IntentKeys.KEY_LOCATION, mMap.getCameraPosition());
+            outState.putParcelable(IntentKeys.KEY_CAMERA_POSITION, mLastKnownLocation);
             super.onSaveInstanceState(outState);
         }
         super.onSaveInstanceState(outState);
     }
 
     @Override
-    public void onClick(View v) {
-        int id = v.getId();
+    public void onClick(View view) {
+        int id = view.getId();
 
         switch (id) {
             case R.id.next_date:
@@ -212,6 +253,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 break;
             case R.id.previous_date:
                 mCalendar.add(Calendar.DAY_OF_MONTH,-1);
+                break;
+            case R.id.search_places_edit:
+                //autoCompleteAddress();
                 break;
         }
         updateTimings();
@@ -228,5 +272,57 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         mSunset.setText(sunset + "");
 
         mDate.setText(String.valueOf(mCalendar.getTime()));
+    }
+
+    private void autoCompleteAddress() {
+
+        mPlaceAutocompleteAdapter = new PlaceAutocompleteAdapter(this,mGoogleApiClient,LAT_LNG_BOUNDS,null);
+
+        com.google.android.libraries.places.api.Places.initialize(getApplicationContext(),
+                "AIzaSyAxt0Mx9mDnNlC-rQ6hMieuYhFgI1Z-iuo");
+
+        PlacesClient placesClient = com.google.android.libraries.places.api.Places.createClient(this);
+
+
+        AutocompleteSessionToken token = AutocompleteSessionToken.newInstance();
+
+        RectangularBounds bounds = RectangularBounds.newInstance(
+                new LatLng(-33.880490, 151.184363),
+                new LatLng(-33.858754, 151.229596));
+        FindAutocompletePredictionsRequest request = FindAutocompletePredictionsRequest.builder()
+                .setLocationBias(bounds)
+                //.setLocationRestriction(bounds)
+                .setQuery("chiranjiv vihar")
+                .setTypeFilter(TypeFilter.ADDRESS)
+                .setSessionToken(token)
+                .build();
+
+        placesClient.findAutocompletePredictions(request).addOnSuccessListener(new OnSuccessListener
+                <FindAutocompletePredictionsResponse>() {
+            @Override
+            public void onSuccess(FindAutocompletePredictionsResponse findAutocompletePredictionsResponse) {
+                findAutocompletePredictionsResponse.getAutocompletePredictions().get(0).a();
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+
+            }
+        });
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (resultCode == RESULT_OK) {
+            Place place = PlaceAutocomplete.getPlace(this, data);
+            Toast.makeText(this, "place "+ place.toString(),
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
     }
 }

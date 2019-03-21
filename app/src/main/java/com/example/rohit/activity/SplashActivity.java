@@ -10,7 +10,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Toast;
 
-import com.example.rohit.solarcalulator.R;
+import com.rohit.solarcalulator.R;
+
 
 public class SplashActivity extends AppCompatActivity {
 

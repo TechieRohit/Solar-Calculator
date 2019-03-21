@@ -1,19 +1,3 @@
-/*
- * Copyright 2008-2009 Mike Reedell / LuckyCatLabs.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.example.rohit.utils.solarcalculator;
 
 import java.math.BigDecimal;
@@ -44,32 +28,6 @@ public class SolarEventCalculator {
         this.timeZone = TimeZone.getTimeZone(timeZoneIdentifier);
     }
 
-    /**
-     * Constructs a new <code>SolarEventCalculator</code> using the given parameters.
-     *
-     * @param location
-     *            <code>Location</code> of the place where the solar event should be calculated from.
-     * @param timeZone
-     *            timezone of the location parameter.
-     */
-    public SolarEventCalculator(Location location, TimeZone timeZone) {
-        this.location = location;
-        this.timeZone = timeZone;
-    }
-
-    /**
-     * Computes the sunrise time for the given zenith at the given date.
-     *
-     * @param solarZenith
-     *            <code>Zenith</code> enum corresponding to the type of sunrise to compute.
-     * @param date
-     *            <code>Calendar</code> object representing the date to compute the sunrise for.
-     * @return the sunrise time, in HH:MM format (24-hour clock), 00:00 if the sun does not rise on the given
-     *         date.
-     */
-    public String computeSunriseTime(Zenith solarZenith, Calendar date) {
-        return getLocalTimeAsString(computeSolarEventTime(solarZenith, date, true));
-    }
 
     /**
      * Computes the sunrise time for the given zenith at the given date.
@@ -82,20 +40,6 @@ public class SolarEventCalculator {
      */
     public Calendar computeSunriseCalendar(Zenith solarZenith, Calendar date) {
         return getLocalTimeAsCalendar(computeSolarEventTime(solarZenith, date, true), date);
-    }
-
-    /**
-     * Computes the sunset time for the given zenith at the given date.
-     *
-     * @param solarZenith
-     *            <code>Zenith</code> enum corresponding to the type of sunset to compute.
-     * @param date
-     *            <code>Calendar</code> object representing the date to compute the sunset for.
-     * @return the sunset time, in HH:MM format (24-hour clock), 00:00 if the sun does not set on the given
-     *         date.
-     */
-    public String computeSunsetTime(Zenith solarZenith, Calendar date) {
-        return getLocalTimeAsString(computeSolarEventTime(solarZenith, date, false));
     }
 
     /**
@@ -288,39 +232,6 @@ public class SolarEventCalculator {
         return localTime;
     }
 
-    /**
-     * Returns the local rise/set time in the form HH:MM.
-     *
-     * @param localTime
-     *            <code>BigDecimal</code> representation of the local rise/set time.
-     * @return <code>String</code> representation of the local rise/set time in HH:MM format.
-     */
-    private String getLocalTimeAsString(BigDecimal localTimeParam) {
-        if (localTimeParam == null) {
-            return "99:99";
-        }
-
-        BigDecimal localTime = localTimeParam;
-        if (localTime.compareTo(BigDecimal.ZERO) == -1) {
-            localTime = localTime.add(BigDecimal.valueOf(24.0D));
-        }
-        String[] timeComponents = localTime.toPlainString().split("\\.");
-        int hour = Integer.parseInt(timeComponents[0]);
-
-        BigDecimal minutes = new BigDecimal("0." + timeComponents[1]);
-        minutes = minutes.multiply(BigDecimal.valueOf(60)).setScale(0, RoundingMode.HALF_EVEN);
-        if (minutes.intValue() == 60) {
-            minutes = BigDecimal.ZERO;
-            hour += 1;
-        }
-        if (hour == 24) {
-            hour = 0;
-        }
-
-        String minuteString = minutes.intValue() < 10 ? "0" + minutes.toPlainString() : minutes.toPlainString();
-        String hourString = (hour < 10) ? "0" + String.valueOf(hour) : String.valueOf(hour);
-        return hourString + ":" + minuteString;
-    }
 
     /**
      * Returns the local rise/set time in the form HH:MM.
