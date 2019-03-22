@@ -68,4 +68,6 @@ public class SavedPlacesAdapter extends RecyclerView.Adapter<SavedPlacesAdapter.
         this.placesList = places;
         notifyDataSetChanged();
     }
+
+
 }

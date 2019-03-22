@@ -52,19 +52,25 @@ public class SavedPinsActivity extends AppCompatActivity implements View.OnClick
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        overridePendingTransition(android.support.design.R.anim.abc_slide_in_bottom, android.support.design.R.anim.abc_slide_out_bottom);
+        openActivityfromBottom();
     }
 
     @Override
     public void onBackPressed() {
-        overridePendingTransition(android.support.design.R.anim.abc_slide_in_bottom, android.support.design.R.anim.abc_slide_out_bottom);
         super.onBackPressed();
+        openActivityfromBottom();
     }
 
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.close) {
             finish();
+            openActivityfromBottom();
         }
     }
+
+    protected void openActivityfromBottom() {
+        overridePendingTransition(R.anim.slide_down, R.anim.slide_up);
+    }
+
 }
