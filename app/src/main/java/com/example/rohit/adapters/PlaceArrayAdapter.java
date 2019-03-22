@@ -32,19 +32,14 @@ public class PlaceArrayAdapter extends ArrayAdapter implements Filterable {
     private RectangularBounds mBounds;
     private ArrayList<PlaceAutoComplete> mResultList = new ArrayList<>();
     public Context context;
+    private String country;
 
-    /**
-     * Constructor
-     *
-     * @param context  Context
-     * @param resource Layout resource
-     * @param bounds   Used to specify the search bounds
-     */
-    public PlaceArrayAdapter(Context context, int resource, RectangularBounds bounds) {
+    public PlaceArrayAdapter(Context context, int resource, RectangularBounds bounds,String country) {
         super(context, resource);
         this.context = context;
         mBounds = bounds;
         placesClient = com.google.android.libraries.places.api.Places.createClient(context);
+        this.country = country;
     }
 
 
@@ -72,17 +67,13 @@ public class PlaceArrayAdapter extends ArrayAdapter implements Filterable {
     private ArrayList<PlaceAutoComplete> getPredictions(CharSequence constraint) {
 
         final ArrayList<PlaceAutoComplete> resultList = new ArrayList<>();
-
-        // Create a new token for the autocomplete session. Pass this to FindAutocompletePredictionsRequest,
-        // and once again when the user makes a selection (for example when calling fetchPlace()).
         AutocompleteSessionToken token = AutocompleteSessionToken.newInstance();
 
-        // Use the builder to create a FindAutocompletePredictionsRequest.
         FindAutocompletePredictionsRequest request = FindAutocompletePredictionsRequest.builder()
                 // Call either setLocationBias() OR setLocationRestriction().
                 // .setLocationBias(bounds)
                 .setLocationBias(mBounds)
-                .setCountry("US")
+                .setCountry(country)
                 .setTypeFilter(TypeFilter.CITIES)
                 .setSessionToken(token)
                 .setQuery(constraint.toString())

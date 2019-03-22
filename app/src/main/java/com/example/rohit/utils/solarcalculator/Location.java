@@ -9,6 +9,7 @@ public class Location {
     private BigDecimal latitude;
     private BigDecimal longitude;
 
+
     /**
      * Creates a new instance of <code>Location</code> with the given parameters.
      * 
@@ -35,6 +36,7 @@ public class Location {
     public BigDecimal getLongitude() {
         return longitude;
     }
+
 
 
 }

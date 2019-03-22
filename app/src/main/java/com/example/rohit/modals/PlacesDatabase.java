@@ -17,12 +17,12 @@ public abstract class PlacesDatabase extends RoomDatabase {
 
     public static PlacesDatabase instance;
 
-    public abstract PlacesDao noteDao();
+    public abstract PlacesDao placeDao();
 
     public static synchronized PlacesDatabase getInstance(Context context) {
         if (instance == null) {
             instance = Room.databaseBuilder(context.getApplicationContext(),
-                    PlacesDatabase.class,"note_database")
+                    PlacesDatabase.class,"places_database")
                     .fallbackToDestructiveMigration()
                     .addCallback(databaseCallback)
                     .build();
@@ -42,13 +42,12 @@ public abstract class PlacesDatabase extends RoomDatabase {
         PlacesDao placesDao;
 
         public PopulateDatabaseWithDefaultNotes(PlacesDatabase instance) {
-            placesDao = instance.noteDao();
+            placesDao = instance.placeDao();
         }
 
         @Override
         protected Void doInBackground(Void... voids) {
-            placesDao.insert(new Places("Title 1",1));
-            placesDao.insert(new Places("Title 2",2));
+            placesDao.insert(new Places("Ghaziabad",55.22,56.64));
             return null;
         }
     }

@@ -32,16 +32,16 @@
             android:value="@string/places_api_key" />
 
         <activity
-            android:name="com.example.rohit.activity.MainActivity"
+            android:name="com.example.rohit.views.activity.MainActivity"
             android:label="@string/title_activity_maps"></activity>
-        <activity android:name="com.example.rohit.activity.SplashActivity">
+        <activity android:name="com.example.rohit.views.activity.SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.example.rohit.activity.AutoComplete"
+        <activity android:name="com.example.rohit.views.activity.AutoComplete"
             android:exported="true"></activity>
     </application>
 

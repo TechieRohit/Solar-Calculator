@@ -1,4 +1,4 @@
-package com.example.rohit.activity;
+package com.example.rohit.views.activity;
 
 import android.Manifest;
 import android.content.Intent;
