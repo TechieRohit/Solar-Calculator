@@ -78,7 +78,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     Calendar officialSunset;
     Calendar officialSunrise;
 
-    AutoCompleteTextView searchPlaces;
+    DelayAutoCompleteTextView searchPlaces;
     PlacesClient placesClient;
     Location location;
     @Override
@@ -113,16 +113,17 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         mMoonrise = findViewById(R.id.text_moonrise);
         mMoonset = findViewById(R.id.text_moonset);
 
-        searchPlaces = findViewById(R.id.search_places_edit);
+        searchPlaces = (DelayAutoCompleteTextView) findViewById(R.id.search_places_edit);
         searchPlaces.setThreshold(3);
+        searchPlaces.setLoadingIndicator(
+                (android.widget.ProgressBar) findViewById(R.id.pb_loading_indicator));
 
         RectangularBounds bounds = RectangularBounds.newInstance(
                 new LatLng(-33.880490, 151.184363),
                 new LatLng(-33.858754, 151.229596));
 
         final PlaceArrayAdapter mPlaceArrayAdapter = new PlaceArrayAdapter(this,
-                R.layout.simple,
-                bounds);
+                R.layout.simple, bounds);
 
         searchPlaces.setAdapter(mPlaceArrayAdapter);
 

@@ -82,7 +82,7 @@ public class PlaceArrayAdapter extends ArrayAdapter implements Filterable {
                 // Call either setLocationBias() OR setLocationRestriction().
                 // .setLocationBias(bounds)
                 .setLocationBias(mBounds)
-                .setCountry("IN")
+                .setCountry("US")
                 .setTypeFilter(TypeFilter.CITIES)
                 .setSessionToken(token)
                 .setQuery(constraint.toString())
@@ -106,7 +106,6 @@ public class PlaceArrayAdapter extends ArrayAdapter implements Filterable {
                     Log.i(TAG, prediction.getPrimaryText(null).toString());
 
                     resultList.add(new PlaceAutoComplete(prediction.getPlaceId(), prediction.getFullText(null).toString()));
-
                 }
 
             return resultList;
@@ -150,28 +149,4 @@ public class PlaceArrayAdapter extends ArrayAdapter implements Filterable {
         return filter;
     }
 
-   /* public class PlaceAutocomplete {
-
-        public CharSequence placeId;
-        public CharSequence description;
-
-
-        PlaceAutocomplete(CharSequence placeId, CharSequence description) {
-            this.placeId = placeId;
-            this.description = description;
-        }
-
-        @Override
-        public String toString() {
-            return description.toString();
-        }
-
-        public CharSequence getPlaceId() {
-            return placeId;
-        }
-
-        public CharSequence getDescription() {
-            return description;
-        }
-    }*/
 }
