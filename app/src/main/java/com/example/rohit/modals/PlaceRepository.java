@@ -7,32 +7,26 @@ import java.util.List;
 
 public class PlaceRepository {
 
-    private PlacesDao mplacesDao;
-    private List<Places> mplaces;
+    private PlacesDao placesDao;
     private LiveData<List<Places>> places;
 
     public PlaceRepository(Application application) {
         PlacesDatabase database = PlacesDatabase.getInstance(application);
-        mplacesDao = database.placeDao();
-        places = mplacesDao.getAllPlaces();
-        new GetAllNotes(mplacesDao).execute();
+        placesDao = database.placeDao();
+        places = placesDao.getAllPlaces();
     }
 
 
     public void insertNote(Places place){
-        new InsertNote(mplacesDao).execute(place);
+        new InsertNote(placesDao).execute(place);
     }
 
     public void deleteNote(Places places) {
-        new DeleteNote(mplacesDao).execute(places);
+        new DeleteNote(placesDao).execute(places);
     }
 
     public void deleteAllNote() {
-        new DeleteAll(mplacesDao).execute();
-    }
-
-    public List<Places> getMplaces() {
-        return mplaces;
+        new DeleteAll(placesDao).execute();
     }
 
     public LiveData<List<Places>> getAllPlaces() {
@@ -79,25 +73,6 @@ public class PlaceRepository {
         protected Void doInBackground(Void... voids) {
             placesDao.deleteAllNote();
             return null;
-        }
-    }
-
-    private class GetAllNotes extends AsyncTask<Void,Void,List<Places>> {
-        private PlacesDao placesDao;
-
-        private GetAllNotes(PlacesDao placesDao) {
-            this.placesDao = placesDao;
-        }
-
-        @Override
-        protected List<Places> doInBackground(Void... voids) {
-           return placesDao.getAllNotes();
-        }
-
-        @Override
-        protected void onPostExecute(List<Places> places) {
-            mplaces = places;
-            super.onPostExecute(places);
         }
     }
 }

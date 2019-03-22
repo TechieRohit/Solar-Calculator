@@ -33,7 +33,7 @@
 
         <activity
             android:name="com.example.rohit.views.activity.MainActivity"
-            android:label="@string/title_activity_maps"></activity>
+            android:label="@string/title_activity_maps" />
         <activity android:name="com.example.rohit.views.activity.SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -41,8 +41,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.example.rohit.views.activity.AutoComplete"
-            android:exported="true"></activity>
+        <activity
+            android:name="com.example.rohit.views.activity.AutoComplete"
+            android:exported="true" />
+        <activity
+            android:name="com.example.rohit.views.activity.SavedPinsActivity"
+            android:theme="@style/Theme.Transparent"></activity>
     </application>
 
 </manifest>

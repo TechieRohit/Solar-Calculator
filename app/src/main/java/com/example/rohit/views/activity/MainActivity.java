@@ -1,14 +1,22 @@
 package com.example.rohit.views.activity;
 
+import android.app.Dialog;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -83,11 +91,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     PlacesClient placesClient;
     Location location;
     PlaceArrayAdapter mPlaceArrayAdapter;
-    PlacesDatabase database;
     String autoCompletePlaceName;
     double autoCompletePlaceLat;
     double autoCompletePlaceLang;
-    PlaceRepository placeRepository;
     private PlaceViewModal mPlaceViewModal;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,7 +115,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         }
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
-        database = PlacesDatabase.getInstance(this);
         mPlaceViewModal = ViewModelProviders.of(this).get(PlaceViewModal.class);
     }
 
@@ -232,9 +237,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void updateTimings(Location location) {
-        calculator = new SunriseSunsetCalculator(location, "America/New_York");
-        officialSunset = calculator.getOfficialSunsetCalendarForDate(Calendar.getInstance());
-        officialSunrise = calculator.getOfficialSunriseCalendarForDate(Calendar.getInstance());
+        calculator = new SunriseSunsetCalculator(location, "");
+        officialSunset = calculator.getOfficialSunsetCalendarForDate(mCalendar);
+        officialSunrise = calculator.getOfficialSunriseCalendarForDate(mCalendar);
 
         sunrise = hourFormat.format(officialSunrise.getTime());
         sunset = hourFormat.format(officialSunset.getTime());
@@ -312,38 +317,23 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void viewLocations() {
-        /*if (placeRepository == null) {
-            placeRepository = new PlaceRepository(getApplication());
-        }
-        List<Places> places = placeRepository.getMplaces();
-
-        if (places == null) {
-            Toast.makeText(this,"empty list",Toast.LENGTH_LONG).show();
-        }else {
-            for (int i =0; i<places.size(); i++) {
-                Toast.makeText(MainActivity.this,"place - " +
-                        places.get(i).getPlaceName(),Toast.LENGTH_LONG).show();
-            }
-        }*/
-
-        mPlaceViewModal.getAllPlaces().observe(this, new Observer<List<Places>>() {
-            @Override
-            public void onChanged(@Nullable List<Places> places) {
-
-                Toast.makeText(MainActivity.this,"place - " + places.get(0).getPlaceName(),Toast.LENGTH_LONG).show();
-            }
-        });
-
-
+        startActivity(new Intent(MainActivity.this,SavedPinsActivity.class));
     }
 
     private void saveLocation() {
-      /*  if (placeRepository == null) {
-            placeRepository = new PlaceRepository(getApplication());
+        if (autoCompletePlaceName.equals(null) || autoCompletePlaceName.isEmpty()) {
+            Toast.makeText(this,"Please search the place first !",Toast.LENGTH_LONG).show();
+        }else {
+            mPlaceViewModal.insert(new Places(autoCompletePlaceName,autoCompletePlaceLat,autoCompletePlaceLang));
         }
+    }
 
-        placeRepository.insertNote(new Places(autoCompletePlaceName,autoCompletePlaceLat,autoCompletePlaceLang));*/
-
-      mPlaceViewModal.insert(new Places(autoCompletePlaceName,autoCompletePlaceLat,autoCompletePlaceLang));
+    public static void showSavedLocationDialogs(Context context) {
+        final Dialog dialog = new Dialog(context);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_saved_locations);
+        dialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.getWindow().setGravity(Gravity.NO_GRAVITY);
     }
 }

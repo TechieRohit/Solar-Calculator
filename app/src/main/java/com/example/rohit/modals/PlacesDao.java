@@ -25,9 +25,6 @@ public interface PlacesDao {
     void deleteAllNote();
 
     @Query("SELECT * FROM places_table ORDER BY id DESC")
-    List<Places> getAllNotes();
-
-    @Query("SELECT * FROM places_table ORDER BY id DESC")
     LiveData<List<Places>> getAllPlaces();
 }
 
