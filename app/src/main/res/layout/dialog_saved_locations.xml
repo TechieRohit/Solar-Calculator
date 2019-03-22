@@ -2,37 +2,104 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_marginTop="20dp"
-    android:layout_marginBottom="20dp"
+    android:layout_width="250dp"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
     android:layout_marginLeft="15dp"
+    android:layout_marginTop="20dp"
     android:layout_marginRight="15dp"
-    android:background="@android:color/white">
+    android:layout_marginBottom="20dp"
+    android:background="@drawable/bg_white_stroke_dark_translucent">
+
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/textView_placename"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:text="Ghaziabad"
+        android:textSize="16sp"
+        android:textStyle="bold"
         android:gravity="center"
+        android:textColor="@color/quantum_white_100"
         android:paddingTop="5dp"
         android:paddingBottom="5dp"
-        android:text="SAVED LOCATIONS"
-        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/recyclerview_saved_locations"
+    <TextView
         android:layout_width="match_parent"
-
         android:layout_height="wrap_content"
-        android:layout_marginTop="-1dp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:gravity="center"
+        android:id="@+id/textdate"
+        android:text="12/12/2008"
+        android:textSize="12sp"
+        android:textColor="@color/quantum_white_100"
+        app:layout_constraintTop_toBottomOf="@+id/textView_placename" />
+
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:padding="4.5dp"
+        android:tint="@color/orange_tint"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView">
+        app:layout_constraintTop_toBottomOf="@+id/textdate"
+        app:srcCompat="@drawable/round_arrow_upward_black_36dp" />
 
-    </android.support.v7.widget.RecyclerView>
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="160dp"
+        android:layout_height="40dp"
+        android:gravity="center_vertical"
+        android:paddingLeft="5dp"
+        android:text="Sunrise"
+        android:textColor="@color/orange_tint"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@+id/imageView2"
+        app:layout_constraintTop_toBottomOf="@+id/textdate" />
 
+    <TextView
+        android:id="@+id/textView_sunrise"
+        android:layout_width="match_parent"
+        android:layout_height="35dp"
+        android:textStyle="bold"
+        android:gravity="center_horizontal"
+        android:text="saf"
+        android:textColor="@android:color/white"
+        app:layout_constraintTop_toBottomOf="@+id/textView2" />
+
+    <ImageView
+        android:id="@+id/imageView3"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:padding="4.5dp"
+        android:tint="@color/orange_tint_light"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView_sunrise"
+        app:srcCompat="@drawable/round_arrow_downward_black_36dp" />
+
+    <TextView
+        android:id="@+id/textVie"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center_vertical"
+        android:paddingLeft="5dp"
+        android:text="Sunset"
+        android:textColor="@color/orange_tint_light"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/imageView3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/imageView2"
+        app:layout_constraintTop_toBottomOf="@+id/textView_sunrise" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="35dp"
+        android:gravity="center_horizontal"
+        android:textColor="@android:color/white"
+        android:textStyle="bold"
+        android:id="@+id/textView_sunset"
+        app:layout_constraintTop_toBottomOf="@+id/textVie" />
 </android.support.constraint.ConstraintLayout>

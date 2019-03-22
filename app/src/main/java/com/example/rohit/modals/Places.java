@@ -19,11 +19,29 @@ public class Places {
     private String placeName;
     private double latitude;
     private double longitude;
+    private String sunrise;
+    private String sunset;
+    private String date;
 
-    public Places(String placeName, double latitude, double longitude) {
+    public Places(String placeName, double latitude, double longitude,String sunrise,String sunset,String date) {
         this.placeName = placeName;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.sunrise = sunrise;
+        this.sunset = sunset;
+        this.date = date;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public String getSunrise() {
+        return sunrise;
+    }
+
+    public String getSunset() {
+        return sunset;
     }
 
     public double getLatitude() {

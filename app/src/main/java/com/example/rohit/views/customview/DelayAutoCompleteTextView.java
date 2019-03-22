@@ -9,7 +9,7 @@ import android.widget.ProgressBar;
 
 public class DelayAutoCompleteTextView extends android.support.v7.widget.AppCompatAutoCompleteTextView {
 
-    private static final int MESSAGE_TEXT_CHANGED = 100;
+    private static final int MESSAGE_TEXT_CHANGED = 750;
     private static final int DEFAULT_AUTOCOMPLETE_DELAY = 1000;
 
     private int mAutoCompleteDelay = DEFAULT_AUTOCOMPLETE_DELAY;

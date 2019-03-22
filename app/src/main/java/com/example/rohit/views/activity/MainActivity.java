@@ -42,6 +42,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -95,6 +96,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     double autoCompletePlaceLat;
     double autoCompletePlaceLang;
     private PlaceViewModal mPlaceViewModal;
+    MarkerOptions markerOptions;
+    String date;
+    private boolean myLocationPressed = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -125,8 +129,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         mDate = findViewById(R.id.date);
         mSunrise = findViewById(R.id.text_sunrise);
         mSunset = findViewById(R.id.text_sunset);
-        mMoonrise = findViewById(R.id.text_moonrise);
-        mMoonset = findViewById(R.id.text_moonset);
+        /*mMoonrise = findViewById(R.id.text_moonrise);
+        mMoonset = findViewById(R.id.text_moonset);*/
 
         searchPlaces = (DelayAutoCompleteTextView) findViewById(R.id.search_places_edit);
         searchPlaces.setThreshold(3);
@@ -143,6 +147,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         searchPlaces.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                myLocationPressed = false;
                 final PlaceAutoComplete item =  mPlaceArrayAdapter.getItem(position);
                 final String placeId = (String) item.getPlaceId();
                 placeDetails(placeId);
@@ -186,13 +191,23 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         } catch (SecurityException e)  {
             Log.e("Exception: %s", e.getMessage());
         }
+
+
+        mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
+            @Override
+            public boolean onMyLocationButtonClick() {
+                myLocationPressed = true;
+                calculateResult(mLastKnownLocation);
+                return false;
+            }
+        });
     }
 
+    /**
+     * Get the best and most recent location of the device, which may be null in rare
+     * cases when a location is not available.
+     */
     private void getDeviceLocation() {
-        /*
-         * Get the best and most recent location of the device, which may be null in rare
-         * cases when a location is not available.
-         */
         try {
                 Task locationResult = mFusedLocationProviderClient.getLastLocation();
                 locationResult.addOnCompleteListener(this, new OnCompleteListener() {
@@ -236,22 +251,28 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         super.onSaveInstanceState(outState);
     }
 
+    /**
+     * This updates the sunrise and sunset time corresponding to a particular area
+     * and date
+     * @param location
+     */
     private void updateTimings(Location location) {
         calculator = new SunriseSunsetCalculator(location, "");
         officialSunset = calculator.getOfficialSunsetCalendarForDate(mCalendar);
         officialSunrise = calculator.getOfficialSunriseCalendarForDate(mCalendar);
-
         sunrise = hourFormat.format(officialSunrise.getTime());
         sunset = hourFormat.format(officialSunset.getTime());
-
-        //Toast.makeText(this,"time zone - " + officialSunset.getTimeZone().getDisplayName(),Toast.LENGTH_LONG).show();
-
         mSunrise.setText(sunrise + "");
         mSunset.setText(sunset + "");
-
-        mDate.setText(String.valueOf(mCalendar.getTime()));
+        date = dateFormat.format(mCalendar.getTime());
+        //mDate.setText(String.valueOf(mCalendar.getTime()));
+        mDate.setText("" + date);
     }
 
+    /**
+     * Fetches details of a place corresponding to its placeId
+     * @param placeId
+     */
     private void placeDetails(String placeId) {
         List<com.google.android.libraries.places.api.model.Place.Field> placeFields =
                 Arrays.asList(com.google.android.libraries.places.api.model.Place.Field.ID,
@@ -265,7 +286,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             public void onSuccess(FetchPlaceResponse fetchPlaceResponse) {
                 com.google.android.libraries.places.api.model.Place place = fetchPlaceResponse.getPlace();
                 Log.i(TAG, "Place found: " + place.getName());
-                Log.i(TAG, "geoCor found: " + place.getLatLng());Toast.makeText(MainActivity.this,"place name - " + place.getName() + place.getLatLng(),Toast.LENGTH_LONG).show();
+                Log.i(TAG, "geoCor found: " + place.getLatLng());
+                //Toast.makeText(MainActivity.this,"place name - " + place.getName() + place.getLatLng(),Toast.LENGTH_LONG).show();
                 LatLng latLng = place.getLatLng();
                 autoCompletePlaceName = place.getName();
                 if (latLng != null) {
@@ -273,6 +295,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     autoCompletePlaceLang = latLng.longitude;
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM));
                     location = new Location(autoCompletePlaceLat,autoCompletePlaceLang);
+                    markerOptions = new MarkerOptions();
+                    markerOptions.position(latLng);
+                    mMap.addMarker(markerOptions);
                     updateTimings(location);
                 }
             }
@@ -288,6 +313,19 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             }
         });
+    }
+
+    private void viewLocations() {
+        startActivity(new Intent(MainActivity.this,SavedPinsActivity.class));
+    }
+
+    private void saveLocation() {
+        if (autoCompletePlaceName == null || autoCompletePlaceName.isEmpty() || myLocationPressed) {
+            Toast.makeText(this,"Please select your place first from the Autosuggestion box !",Toast.LENGTH_LONG).show();
+        }else {
+            mPlaceViewModal.insert(new Places(autoCompletePlaceName,autoCompletePlaceLat
+                    ,autoCompletePlaceLang,sunrise,sunset,date));
+        }
     }
 
     @Override
@@ -316,24 +354,4 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    private void viewLocations() {
-        startActivity(new Intent(MainActivity.this,SavedPinsActivity.class));
-    }
-
-    private void saveLocation() {
-        if (autoCompletePlaceName.equals(null) || autoCompletePlaceName.isEmpty()) {
-            Toast.makeText(this,"Please search the place first !",Toast.LENGTH_LONG).show();
-        }else {
-            mPlaceViewModal.insert(new Places(autoCompletePlaceName,autoCompletePlaceLat,autoCompletePlaceLang));
-        }
-    }
-
-    public static void showSavedLocationDialogs(Context context) {
-        final Dialog dialog = new Dialog(context);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setContentView(R.layout.dialog_saved_locations);
-        dialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
-        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        dialog.getWindow().setGravity(Gravity.NO_GRAVITY);
-    }
 }

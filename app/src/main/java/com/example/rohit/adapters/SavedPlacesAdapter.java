@@ -9,6 +9,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.rohit.modals.Places;
+import com.example.rohit.views.customview.CustomDialogs;
 import com.rohit.solarcalulator.R;
 
 
@@ -17,7 +18,7 @@ import java.util.List;
 
 public class SavedPlacesAdapter extends RecyclerView.Adapter<SavedPlacesAdapter.ViewHolder> {
 
-    List<Places> placesList = new ArrayList<>();
+    List<Places> placesList;
     Context context;
 
     public SavedPlacesAdapter(Context context,List<Places> places) {
@@ -35,7 +36,7 @@ public class SavedPlacesAdapter extends RecyclerView.Adapter<SavedPlacesAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.textViewTitle.setText("" + placesList.get(position).getPlaceName());
+        holder.textViewTitle.setText(placesList.get(position).getPlaceName() + " (" + placesList.get(position).getDate() + ")");
     }
 
     @Override
@@ -53,7 +54,9 @@ public class SavedPlacesAdapter extends RecyclerView.Adapter<SavedPlacesAdapter.
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(context,"clicked",Toast.LENGTH_LONG).show();
+                    int pos = getAdapterPosition();
+                    CustomDialogs.showSavedLocationDialogs(context,placesList.get(getAdapterPosition()).getSunrise(),
+                            placesList.get(pos).getSunset(),placesList.get(pos).getPlaceName(),placesList.get(pos).getDate());
                 }
             });
         }
@@ -68,6 +71,4 @@ public class SavedPlacesAdapter extends RecyclerView.Adapter<SavedPlacesAdapter.
         this.placesList = places;
         notifyDataSetChanged();
     }
-
-
 }

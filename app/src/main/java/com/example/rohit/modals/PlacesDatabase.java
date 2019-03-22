@@ -47,7 +47,7 @@ public abstract class PlacesDatabase extends RoomDatabase {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            placesDao.insert(new Places("Ghaziabad",55.22,56.64));
+            //placesDao.insert(new Places("Ghaziabad",55.22,56.64));
             return null;
         }
     }
