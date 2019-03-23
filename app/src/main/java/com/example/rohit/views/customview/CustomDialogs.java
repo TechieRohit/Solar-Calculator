@@ -16,6 +16,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 
+import com.example.rohit.viewmodal.PlaceViewModal;
 import com.rohit.solarcalulator.R;
 
 
@@ -85,6 +86,33 @@ public class CustomDialogs {
             public void onClick(DialogInterface dialog, int which) {
                 dialog.cancel();
                 context.finish();
+            }
+        });
+
+        alertDialog.show();
+    }
+
+    public static void deleteForever(Context context, final PlaceViewModal mPlaceViewModal) {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+
+        alertDialog.setTitle("Delete");
+
+        alertDialog.setMessage("Delete all the entries?");
+
+        alertDialog.setPositiveButton("Sure", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                mPlaceViewModal.deleteAllNotes();
+                dialog.cancel();
+            }
+        });
+
+        alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
             }
         });
 

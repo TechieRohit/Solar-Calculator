@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.example.rohit.adapters.SavedPlacesAdapter;
 import com.example.rohit.modals.Places;
 import com.example.rohit.viewmodal.PlaceViewModal;
+import com.example.rohit.views.customview.CustomDialogs;
 import com.rohit.solarcalulator.R;
 
 import java.util.ArrayList;
@@ -46,8 +47,17 @@ public class SavedPinsActivity extends AppCompatActivity implements View.OnClick
             public void onChanged(@Nullable List<Places> places) {
                 if (!places.isEmpty()) {
                     findViewById(R.id.textView3).setVisibility(View.GONE);
+                }else {
+                    findViewById(R.id.textView3).setVisibility(View.VISIBLE);
                 }
                 mSavedPlacesAdapter.setNotes(places);
+            }
+        });
+
+        findViewById(R.id.delete).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                CustomDialogs.deleteForever(SavedPinsActivity.this,mPlaceViewModal);
             }
         });
     }

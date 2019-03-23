@@ -20,10 +20,9 @@
         android:layout_marginRight="10dp"
         android:layout_marginBottom="15dp">
 
-        <android.support.constraint.ConstraintLayout
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@android:color/white">
+            android:layout_height="match_parent">
 
             <ImageView
                 android:id="@+id/close"
@@ -31,26 +30,37 @@
                 android:layout_height="40dp"
                 android:foregroundGravity="center"
                 android:onClick="onClick"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentLeft="true"
                 android:src="@drawable/baseline_keyboard_arrow_left_black_36dp"
                 android:tint="@color/colorBlack80"
-                app:layout_constraintBottom_toTopOf="@+id/recyclerview_saved_locations"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/textView" />
+                 />
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:id="@+id/delete"
+                android:padding="4dp"
+                android:src="@drawable/round_delete_forever_black_36dp"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentTop="true"
+                />
 
             <TextView
                 android:id="@+id/textView"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
-                android:layout_marginTop="5dp"
                 android:gravity="center"
-                android:paddingTop="5dp"
-                android:paddingBottom="5dp"
                 android:text="SAVED LOCATIONS"
+                android:layout_toRightOf="@id/close"
+                android:layout_toLeftOf="@id/delete"
                 android:textColor="@color/colorBlack80"
                 android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
+
+
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/recyclerview_saved_locations"
@@ -59,11 +69,7 @@
                 android:clipToPadding="true"
                 android:paddingTop="10dp"
                 android:paddingBottom="10dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView">
-
-            </android.support.v7.widget.RecyclerView>
+                android:layout_below="@id/close"/>
 
             <TextView
                 android:id="@+id/textView3"
@@ -75,6 +81,7 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginRight="8dp"
                 android:layout_marginBottom="8dp"
+                android:layout_centerInParent="true"
                 android:text="No Saved Location !"
                 android:textStyle="bold"
                 android:textSize="16sp"
@@ -82,8 +89,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
-        </android.support.constraint.ConstraintLayout>
-
+        </RelativeLayout>
 
     </android.support.v7.widget.CardView>
 
