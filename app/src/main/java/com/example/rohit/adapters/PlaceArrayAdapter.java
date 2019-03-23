@@ -46,9 +46,7 @@ public class PlaceArrayAdapter extends ArrayAdapter implements Filterable {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        View view = super.getView(position, convertView, parent);
-        //TypefaceHelper.typeface(view);
-        return view;
+      return super.getView(position, convertView, parent);
     }
 
     @Override
@@ -64,6 +62,12 @@ public class PlaceArrayAdapter extends ArrayAdapter implements Filterable {
         return mResultList.get(position);
     }
 
+    /**
+     * Fetching the prediction results on the basis of constraint
+     * Request here is made with a delay of 750ms after user enters the characters
+     * @param constraint
+     * @return
+     */
     private ArrayList<PlaceAutoComplete> getPredictions(CharSequence constraint) {
 
         final ArrayList<PlaceAutoComplete> resultList = new ArrayList<>();

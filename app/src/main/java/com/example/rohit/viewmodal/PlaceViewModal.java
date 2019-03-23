@@ -10,6 +10,10 @@ import com.example.rohit.modals.Places;
 
 import java.util.List;
 
+/**
+ * ViewModel contains a reference to the repository
+ * to perform crucial task
+ */
 public class PlaceViewModal extends AndroidViewModel {
 
     private PlaceRepository placeRepository;

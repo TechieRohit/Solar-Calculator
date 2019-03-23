@@ -6,14 +6,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.rohit.modals.Places;
 import com.example.rohit.views.customview.CustomDialogs;
 import com.rohit.solarcalulator.R;
 
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class SavedPlacesAdapter extends RecyclerView.Adapter<SavedPlacesAdapter.ViewHolder> {
@@ -60,7 +58,6 @@ public class SavedPlacesAdapter extends RecyclerView.Adapter<SavedPlacesAdapter.
                 }
             });
         }
-
 
         @Override
         public void onClick(View v) {

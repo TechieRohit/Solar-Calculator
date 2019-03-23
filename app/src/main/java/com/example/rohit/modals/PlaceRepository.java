@@ -5,6 +5,13 @@ import android.arch.lifecycle.LiveData;
 import android.os.AsyncTask;
 import java.util.List;
 
+
+/**
+ * PlaceRepository consists of methods to act on the database created
+ * It contains a DAO(Data access object) to perform the queries
+ * This class also contains main business logic for database queries
+ */
+
 public class PlaceRepository {
 
     private PlacesDao placesDao;
@@ -46,7 +53,6 @@ public class PlaceRepository {
             return null;
         }
     }
-
 
     private class DeleteNote extends AsyncTask<Places,Void,Void> {
         private PlacesDao placesDao;

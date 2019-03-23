@@ -10,8 +10,8 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
-        buildConfigField 'String', "places_api_key", "\"AIzaSyBzZeJs38nZ3I64PWi5IaoqMxwAuwbbTM0\""
-        resValue "string", "places_api_key", "\"AIzaSyBzZeJs38nZ3I64PWi5IaoqMxwAuwbbTM0\""
+        buildConfigField 'String', "places_api_key", "\"AIzaSyATyVSoGzvYSMir7VPfTue-SwwJ40nNgEM\""
+        resValue "string", "places_api_key", "\"AIzaSyATyVSoGzvYSMir7VPfTue-SwwJ40nNgEM\""
         //resValue "string", "clever_tap_id", "TEST-K7R-W57-774Z"
         //manifestPlaceholders = [ places_api_key:"AIzaSyAxt0Mx9mDnNlC-rQ6hMieuYhFgI1Z-iuo"]
 

@@ -1,40 +1,39 @@
 package com.example.rohit.views.activity;
 
-import android.app.Dialog;
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.Observer;
+import android.Manifest;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
+import android.content.pm.PackageManager;
+import android.location.LocationManager;
+import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.rohit.LocationTrack;
+import com.example.rohit.LocationTracker;
 import com.example.rohit.adapters.PlaceArrayAdapter;
 import com.example.rohit.constants.IntentKeys;
 import com.example.rohit.constants.Vars;
 
 import com.example.rohit.modals.PlaceAutoComplete;
-import com.example.rohit.modals.PlaceRepository;
 import com.example.rohit.modals.Places;
-import com.example.rohit.modals.PlacesDatabase;
 import com.example.rohit.utils.solarcalculator.Location;
 import com.example.rohit.utils.solarcalculator.SunriseSunsetCalculator;
 import com.example.rohit.viewmodal.PlaceViewModal;
+import com.example.rohit.views.customview.CustomDialogs;
 import com.example.rohit.views.customview.DelayAutoCompleteTextView;
 import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -63,6 +62,8 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
+import static android.location.GpsStatus.GPS_EVENT_STARTED;
+import static android.location.GpsStatus.GPS_EVENT_STOPPED;
 import static com.example.rohit.constants.Vars.DEFAULT_ZOOM;
 
 public class MainActivity extends FragmentActivity implements OnMapReadyCallback,
@@ -70,21 +71,16 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
     private final String TAG = "main_activity";
 
-    private android.location.Location mLastKnownLocation;
-    private android.location.Location mCurrentLocation;
-    private CameraPosition mCameraPosition;
-
     private GoogleMap mMap;
-    private FusedLocationProviderClient mFusedLocationProviderClient;
 
     private Calendar mCalendar;
     DateFormat hourFormat;
     DateFormat dateFormat;
 
-    private TextView mSunrise,mSunset,mMoonrise,mMoonset,mDate;
+    private TextView mSunrise, mSunset, mDate;
 
     SunriseSunsetCalculator calculator;
-    String sunrise,sunset;
+    String sunrise, sunset;
     Calendar officialSunset;
     Calendar officialSunrise;
 
@@ -99,25 +95,24 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     MarkerOptions markerOptions;
     String date;
     private boolean myLocationPressed = false;
+
+    private double mCurrentPlaceLat;
+    private double mCurrentPlaceLong;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mCurrentPlaceLat = getIntent().getDoubleExtra(IntentKeys.CURRENT_PLACE_LATITUDE,0.00);
+        mCurrentPlaceLong = getIntent().getDoubleExtra(IntentKeys.CURRENT_PLACE_LONGITUDE,0.00);
         initViews();
         initMap();
 
         mCalendar = Calendar.getInstance();
         hourFormat = new SimpleDateFormat(Vars.STR_HOUR_FORMAT);
         dateFormat = new SimpleDateFormat(Vars.STR_DATE_FORMAT);
-
-        if (savedInstanceState != null) {
-            mCurrentLocation = savedInstanceState.getParcelable(IntentKeys.KEY_LOCATION);
-            mCameraPosition = savedInstanceState.getParcelable(IntentKeys.KEY_CAMERA_POSITION);
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mCurrentLocation.getLatitude(),
-                    mCurrentLocation.getLongitude()), DEFAULT_ZOOM));
-
-        }
-        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
         mPlaceViewModal = ViewModelProviders.of(this).get(PlaceViewModal.class);
     }
@@ -129,8 +124,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         mDate = findViewById(R.id.date);
         mSunrise = findViewById(R.id.text_sunrise);
         mSunset = findViewById(R.id.text_sunset);
-        /*mMoonrise = findViewById(R.id.text_moonrise);
-        mMoonset = findViewById(R.id.text_moonset);*/
 
         searchPlaces = (DelayAutoCompleteTextView) findViewById(R.id.search_places_edit);
         searchPlaces.setThreshold(3);
@@ -140,7 +133,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 new LatLng(-33.880490, 151.184363),
                 new LatLng(-33.858754, 151.229596));
 
-        mPlaceArrayAdapter = new PlaceArrayAdapter(this, R.layout.simple, bounds,Vars.Country.INDIA);
+        mPlaceArrayAdapter = new PlaceArrayAdapter(this, R.layout.simple, bounds, Vars.Country.INDIA);
 
         searchPlaces.setAdapter(mPlaceArrayAdapter);
 
@@ -148,13 +141,17 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 myLocationPressed = false;
-                final PlaceAutoComplete item =  mPlaceArrayAdapter.getItem(position);
+                final PlaceAutoComplete item = mPlaceArrayAdapter.getItem(position);
                 final String placeId = (String) item.getPlaceId();
                 placeDetails(placeId);
             }
         });
     }
 
+
+    /**
+     * Initiating the Map fragment
+     */
     private void initMap() {
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -174,6 +171,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+        /*LatLng sydney = new LatLng(-34, 151);
+        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));*/
         // Turn on the My Location layer and the related control on the map.
         updateLocationUI();
 
@@ -181,23 +181,30 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         getDeviceLocation();
     }
 
+
+
+    /**
+     * Setting MyLocation button as enabled
+     * Adding a callback to MyLocation button
+     */
     private void updateLocationUI() {
         if (mMap == null) {
+            Log.e(TAG, "mMap == null");
             return;
         }
         try {
             mMap.setMyLocationEnabled(true);
             mMap.getUiSettings().setMyLocationButtonEnabled(true);
-        } catch (SecurityException e)  {
+        } catch (SecurityException e) {
             Log.e("Exception: %s", e.getMessage());
         }
-
 
         mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
             @Override
             public boolean onMyLocationButtonClick() {
                 myLocationPressed = true;
-                calculateResult(mLastKnownLocation);
+                CustomDialogs.hideKeyboard(MainActivity.this);
+                calculateResult(mCurrentPlaceLat,mCurrentPlaceLong);
                 return false;
             }
         });
@@ -208,47 +215,15 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
      * cases when a location is not available.
      */
     private void getDeviceLocation() {
-        try {
-                Task locationResult = mFusedLocationProviderClient.getLastLocation();
-                locationResult.addOnCompleteListener(this, new OnCompleteListener() {
-                    @Override
-                    public void onComplete(@NonNull Task task) {
-                        if (task.isSuccessful()) {
-                            // Set the map's camera position to the current location of the device.
-                            mLastKnownLocation = (android.location.Location) task.getResult();
-                            calculateResult(mLastKnownLocation);
-                        } else {
-                           /* Log.d(TAG, "Current location is null. Using defaults.");
-                            Log.e(TAG, "Exception: %s", task.getException());*/
-                            //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation, DEFAULT_ZOOM));
-                            mMap.getUiSettings().setMyLocationButtonEnabled(false);
-                        }
-                    }
-                });
-        } catch(SecurityException e)  {
-            Log.e("Exception: %s", e.getMessage());
-        }
+       calculateResult(mCurrentPlaceLat,mCurrentPlaceLong);
     }
 
-    private void calculateResult(android.location.Location currentLocation) {
-        double latitude = currentLocation.getLatitude();
-        double longitude = currentLocation.getLongitude();
-
+    private void calculateResult(double latitude,double longitude) {
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude,
                 longitude), DEFAULT_ZOOM));
 
         location = new Location(latitude, longitude);
         updateTimings(location);
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        if (mMap != null) {
-            outState.putParcelable(IntentKeys.KEY_LOCATION, mMap.getCameraPosition());
-            outState.putParcelable(IntentKeys.KEY_CAMERA_POSITION, mLastKnownLocation);
-            super.onSaveInstanceState(outState);
-        }
-        super.onSaveInstanceState(outState);
     }
 
     /**
@@ -284,6 +259,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         placesClient.fetchPlace(request).addOnSuccessListener(new OnSuccessListener<FetchPlaceResponse>() {
             @Override
             public void onSuccess(FetchPlaceResponse fetchPlaceResponse) {
+                CustomDialogs.hideKeyboard(MainActivity.this);
                 com.google.android.libraries.places.api.model.Place place = fetchPlaceResponse.getPlace();
                 Log.i(TAG, "Place found: " + place.getName());
                 Log.i(TAG, "geoCor found: " + place.getLatLng());
@@ -319,12 +295,16 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         startActivity(new Intent(MainActivity.this,SavedPinsActivity.class));
     }
 
+    /**
+     * Saving the location to local database
+     */
     private void saveLocation() {
         if (autoCompletePlaceName == null || autoCompletePlaceName.isEmpty() || myLocationPressed) {
             Toast.makeText(this,"Please select your place first from the Autosuggestion box !",Toast.LENGTH_LONG).show();
         }else {
             mPlaceViewModal.insert(new Places(autoCompletePlaceName,autoCompletePlaceLat
                     ,autoCompletePlaceLang,sunrise,sunset,date));
+            Toast.makeText(this,"Location Saved !", Toast.LENGTH_LONG).show();
         }
     }
 

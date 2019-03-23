@@ -19,6 +19,11 @@ public abstract class PlacesDatabase extends RoomDatabase {
 
     public abstract PlacesDao placeDao();
 
+    /**
+     * A singelton instance of the database
+     * @param context
+     * @return
+     */
     public static synchronized PlacesDatabase getInstance(Context context) {
         if (instance == null) {
             instance = Room.databaseBuilder(context.getApplicationContext(),
@@ -30,6 +35,9 @@ public abstract class PlacesDatabase extends RoomDatabase {
         return instance;
     }
 
+    /**
+     * Callback when database has created
+     */
     private static Callback databaseCallback = new Callback() {
         @Override
         public void onCreate(@NonNull SupportSQLiteDatabase db) {

@@ -7,7 +7,13 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ProgressBar;
 
+/**
+ * Creating a custom AutoCompleteTextView
+ * adding a delay for each request,progress dialog
+ */
+
 public class DelayAutoCompleteTextView extends android.support.v7.widget.AppCompatAutoCompleteTextView {
+
 
     private static final int MESSAGE_TEXT_CHANGED = 750;
     private static final int DEFAULT_AUTOCOMPLETE_DELAY = 1000;
