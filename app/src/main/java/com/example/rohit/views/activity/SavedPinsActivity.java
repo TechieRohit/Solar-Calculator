@@ -44,6 +44,9 @@ public class SavedPinsActivity extends AppCompatActivity implements View.OnClick
         mPlaceViewModal.getAllPlaces().observe(this, new Observer<List<Places>>() {
             @Override
             public void onChanged(@Nullable List<Places> places) {
+                if (!places.isEmpty()) {
+                    findViewById(R.id.textView3).setVisibility(View.GONE);
+                }
                 mSavedPlacesAdapter.setNotes(places);
             }
         });

@@ -23,7 +23,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.rohit.LocationTracker;
 import com.example.rohit.constants.IntentKeys;
 import com.example.rohit.views.customview.CustomDialogs;
 import com.google.android.gms.common.ConnectionResult;
@@ -64,6 +63,7 @@ public class SplashActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
         getMandatoryPermissions();
+
     }
 
     public void getUserLocation(){

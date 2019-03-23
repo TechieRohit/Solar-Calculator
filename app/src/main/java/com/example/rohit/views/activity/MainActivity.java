@@ -17,8 +17,6 @@ import android.widget.AdapterView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.rohit.LocationTrack;
-import com.example.rohit.LocationTracker;
 import com.example.rohit.adapters.PlaceArrayAdapter;
 import com.example.rohit.constants.IntentKeys;
 import com.example.rohit.constants.Vars;
@@ -75,7 +73,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
     private Calendar mCalendar;
     DateFormat hourFormat;
-    DateFormat dateFormat;
+    SimpleDateFormat dateFormat;
 
     private TextView mSunrise, mSunset, mDate;
 
@@ -98,8 +96,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
     private double mCurrentPlaceLat;
     private double mCurrentPlaceLong;
-
-
+    int count = 0;
+    Handler handler;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -111,8 +109,13 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         initMap();
 
         mCalendar = Calendar.getInstance();
-        hourFormat = new SimpleDateFormat(Vars.STR_HOUR_FORMAT);
-        dateFormat = new SimpleDateFormat(Vars.STR_DATE_FORMAT);
+        try {
+            hourFormat = new SimpleDateFormat(Vars.STR_HOUR_FORMAT);
+            dateFormat = new SimpleDateFormat(Vars.STR_DATE_FORMAT);
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+
 
         mPlaceViewModal = ViewModelProviders.of(this).get(PlaceViewModal.class);
     }
@@ -235,13 +238,17 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         calculator = new SunriseSunsetCalculator(location, "");
         officialSunset = calculator.getOfficialSunsetCalendarForDate(mCalendar);
         officialSunrise = calculator.getOfficialSunriseCalendarForDate(mCalendar);
+
         sunrise = hourFormat.format(officialSunrise.getTime());
         sunset = hourFormat.format(officialSunset.getTime());
         mSunrise.setText(sunrise + "");
         mSunset.setText(sunset + "");
-        date = dateFormat.format(mCalendar.getTime());
-        //mDate.setText(String.valueOf(mCalendar.getTime()));
-        mDate.setText("" + date);
+        if (dateFormat != null){
+            date = dateFormat.format(mCalendar.getTime());
+            mDate.setText("" + date);
+        }else {
+            mDate.setText(String.valueOf(mCalendar.getTime()));
+        }
     }
 
     /**
@@ -334,4 +341,29 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        count++;
+        if (count > 1) {
+            finish();
+        }else {
+            Toast.makeText(this,"Press twice to exit",Toast.LENGTH_LONG).show();
+        }
+        resetCount();
+    }
+
+    private void resetCount() {
+        handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                count = 0;
+            }
+        },1500);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
 }
