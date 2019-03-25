@@ -64,8 +64,7 @@ import static android.location.GpsStatus.GPS_EVENT_STARTED;
 import static android.location.GpsStatus.GPS_EVENT_STOPPED;
 import static com.example.rohit.constants.Vars.DEFAULT_ZOOM;
 
-public class MainActivity extends FragmentActivity implements OnMapReadyCallback,
-        View.OnClickListener {
+public class MainActivity extends FragmentActivity implements OnMapReadyCallback, View.OnClickListener {
 
     private final String TAG = "main_activity";
 
@@ -105,6 +104,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
         mCurrentPlaceLat = getIntent().getDoubleExtra(IntentKeys.CURRENT_PLACE_LATITUDE,0.00);
         mCurrentPlaceLong = getIntent().getDoubleExtra(IntentKeys.CURRENT_PLACE_LONGITUDE,0.00);
+        handler = new Handler();
         initViews();
         initMap();
 
@@ -353,7 +353,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void resetCount() {
-        handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
