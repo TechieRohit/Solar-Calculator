@@ -1,0 +1,2 @@
+# Solar-Calculator
+Solar-Calculator is an Android app that auto-fetches the user location to get latitude and longitude to calculate Phasetime using Zenith calculator to show the sunrise and sunset for that place(city etc).User can later search their desired places to select the location and get it pinned on Google-maps to see the results accordingly.User is able to see the sunrise and sunset for the previous and upcoming days.
